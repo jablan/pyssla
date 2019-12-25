@@ -1,7 +1,7 @@
 require 'securerandom'
 require 'mini_magick'
 
-# MiniMagick.logger.level = Logger::DEBUG
+MiniMagick.logger.level = Logger::DEBUG
 
 get '/' do
   local_name = nil

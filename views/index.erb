@@ -16,11 +16,19 @@ window.onload = function() {
 };
 
 </script>
+<div class="container-fluid">
+  <div class="row">
+    <form action="upload" method="POST" enctype="multipart/form-data">
+      <input type="file" name="file" accept="image/*" onchange="this.form.submit();">
+    </form>
+  </div>
 
-<form action="upload" method="POST" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit" value="Upload image">
-</form>
-
-<img id="image" src="uploads/<%= local_name %>" />
-<img id="cropped" />
+  <div class="row">
+    <div class="col-sm">
+      <img id="image" src="uploads/<%= local_name %>" />
+    </div>
+    <div class="col-sm">
+      <img id="cropped" />
+    <div>
+  </div>
+</div>
