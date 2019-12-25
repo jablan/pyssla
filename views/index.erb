@@ -2,9 +2,14 @@
 
 function selectChange(coords, e) {
   console.log(coords.pos);
-  var imageCropped = document.getElementById("cropped");
-  imageCropped.src = "/cropped/<%= local_name %>?w=" +
+  var imgSrc = "/cropped/<%= local_name %>?w=" +
     coords.pos.w + "&h=" + coords.pos.h + "&x=" + coords.pos.x + "&y=" + coords.pos.y;
+  var imageCropped = document.getElementById("cropped");
+  imageCropped.src = imgSrc;
+  var linkZoomed = document.getElementById("btnZoomed");
+  linkZoomed.href = imgSrc + "&zoom=true&download=true";
+  var linkCSV = document.getElementById("btnCSV");
+  linkCSV.href = imgSrc + "&csv=true";
 }
 
 window.onload = function() {
@@ -25,10 +30,14 @@ window.onload = function() {
 
   <div class="row">
     <div class="col-sm">
-      <img id="image" src="uploads/<%= local_name %>" />
+      <% if local_name %>
+        <img id="image" class="img-fluid" src="uploads/<%= local_name %>" />
+      <% end %>
     </div>
     <div class="col-sm">
-      <img id="cropped" />
+      <img id="cropped" class="img-fluid" />
+      <a id="btnZoomed" class="btn btn-primary" href="#" role="button">Download zoomed</a>
+      <a id="btnCSV" class="btn btn-primary" href="#" role="button">Download CSV</a>
     <div>
   </div>
 </div>

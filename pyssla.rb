@@ -3,6 +3,8 @@ require 'mini_magick'
 
 MiniMagick.logger.level = Logger::DEBUG
 
+UPLOAD_DIR = './public/uploads'
+
 get '/' do
   local_name = nil
 
@@ -22,26 +24,47 @@ end
 get '/cropped/:image' do
   cache_control :no_store
   image_name = params[:image]
-  process(image_name, params)
-  content_type :png
-  File.read("./public/uploads/#{image_name}.png")
+  return :not_found unless /^[0-9a-z-]+$/.match?(image_name)
+  return 404 unless File.exist?(File.join(UPLOAD_DIR, image_name))
+
+  zoom = params[:zoom] == 'true'
+  csv = params[:csv] == 'true'
+
+  png_path = process(image_name, params, zoom: zoom)
+
+  if csv
+    image = MiniMagick::Image.open(png_path)
+    pixels = image.get_pixels
+    p pixels
+    'OK'
+  else
+    content_type :png
+    headers "Content-Disposition" => "attachment; filename=pyssla.png" if params[:download] == 'true'
+    File.read(png_path)
+  end
 end
 
 def initial_resize(tmp_image, local_name)
   image = MiniMagick::Tool::Convert.new do |img|
     img << tmp_image.path
-    img.resize "600x600>"
-    img << "./public/uploads/#{local_name}"
+    img.resize '600x600>'
+    img << File.join(UPLOAD_DIR, local_name)
   end
 end
 
-def process(image_name, coords)
+def process(image_name, coords, zoom: false)
+  png_path = File.join(UPLOAD_DIR, "#{image_name}.png")
   image = MiniMagick::Tool::Convert.new do |img|
-    img << "./public/uploads/#{image_name}"
+    img << File.join(UPLOAD_DIR, image_name)
     img.crop "#{coords[:w]}x#{coords[:h]}+#{coords[:x]}+#{coords[:y]}"
     img.resize "29x29"
     img.dither "FloydSteinberg"
     img.remap File.expand_path("./pyssla.gif")
-    img << "./public/uploads/#{image_name}.png"
+    if zoom
+      img.filter 'Box'
+      img.resize '2000%'
+    end
+    img << png_path
   end
+  png_path
 end
