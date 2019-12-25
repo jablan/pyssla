@@ -1,0 +1,26 @@
+<script>
+
+function selectChange(coords, e) {
+  console.log(coords.pos);
+  var imageCropped = document.getElementById("cropped");
+  imageCropped.src = "/cropped/<%= local_name %>?w=" +
+    coords.pos.w + "&h=" + coords.pos.h + "&x=" + coords.pos.x + "&y=" + coords.pos.y;
+}
+
+window.onload = function() {
+  const cropper = Jcrop.attach('image', {
+    aspectRatio: 1
+  });
+
+  cropper.listen('crop.change', selectChange);
+};
+
+</script>
+
+<form action="upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <input type="submit" value="Upload image">
+</form>
+
+<img id="image" src="uploads/<%= local_name %>" />
+<img id="cropped" />
