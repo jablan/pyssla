@@ -4,6 +4,7 @@ require 'mini_magick'
 MiniMagick.logger.level = Logger::DEBUG
 
 UPLOAD_DIR = './public/uploads'
+DEFAULT_DITHER = 'FloydSteinberg'
 
 get '/' do
   local_name = nil
@@ -21,16 +22,19 @@ post '/upload' do
   erb :index, locals: { local_name: local_name }
 end
 
-get '/cropped/:image' do
+get %r{/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})} do |image_name|
   cache_control :no_store
-  image_name = params[:image]
-  return :not_found unless /^[0-9a-z-]+$/.match?(image_name)
   return 404 unless File.exist?(File.join(UPLOAD_DIR, image_name))
 
   zoom = params[:zoom] == 'true'
   csv = params[:csv] == 'true'
+  dither = case params[:d]
+  when 'None' then nil
+  when 'Riemersma' then 'Riemersma'
+  else DEFAULT_DITHER
+  end
 
-  png_path = process(image_name, params, zoom: zoom)
+  png_path = process(image_name, params, zoom: zoom, dither: dither)
 
   if csv
     image = MiniMagick::Image.open(png_path)
@@ -52,13 +56,13 @@ def initial_resize(tmp_image, local_name)
   end
 end
 
-def process(image_name, coords, zoom: false)
+def process(image_name, coords, dither:, zoom: false)
   png_path = File.join(UPLOAD_DIR, "#{image_name}.png")
   image = MiniMagick::Tool::Convert.new do |img|
     img << File.join(UPLOAD_DIR, image_name)
     img.crop "#{coords[:w]}x#{coords[:h]}+#{coords[:x]}+#{coords[:y]}"
     img.resize "29x29"
-    img.dither "FloydSteinberg"
+    dither ? img.dither(dither) : img.dither.+
     img.remap File.expand_path("./pyssla.gif")
     if zoom
       img.filter 'Box'

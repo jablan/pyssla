@@ -1,15 +1,25 @@
 <script>
+var w, h, x, y;
 
-function selectChange(coords, e) {
-  console.log(coords.pos);
-  var imgSrc = "/cropped/<%= local_name %>?w=" +
-    coords.pos.w + "&h=" + coords.pos.h + "&x=" + coords.pos.x + "&y=" + coords.pos.y;
+function updateCropped() {
+  var ditherSelect = document.getElementById("dither");
+  var dither = ditherSelect.value;
+  var imgSrc = "/<%= local_name %>?w=" + w + "&h=" + h + "&x=" + x + "&y=" + y + "&d=" + dither;
   var imageCropped = document.getElementById("cropped");
   imageCropped.src = imgSrc;
   var linkZoomed = document.getElementById("btnZoomed");
   linkZoomed.href = imgSrc + "&zoom=true&download=true";
   var linkCSV = document.getElementById("btnCSV");
   linkCSV.href = imgSrc + "&csv=true";
+}
+
+function selectChange(coords, e) {
+  w = coords.pos.w;
+  h = coords.pos.h;
+  x = coords.pos.x;
+  y = coords.pos.y;
+
+  updateCropped();
 }
 
 window.onload = function() {
@@ -23,9 +33,14 @@ window.onload = function() {
 </script>
 <div class="container-fluid">
   <div class="row">
-    <form action="upload" method="POST" enctype="multipart/form-data">
+    <form action="upload" class="form-control-file" method="POST" enctype="multipart/form-data">
       <input type="file" name="file" accept="image/*" onchange="this.form.submit();">
     </form>
+    <select id="dither" class="form-control" onchange="updateCropped();">
+      <option value="FloydSteinberg">Floyd-Steinberg</option>
+      <option value="Riemersma">Riemersma</option>
+      <option value="None">None</option>
+    </select>
   </div>
 
   <div class="row">
