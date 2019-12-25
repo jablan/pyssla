@@ -1,6 +1,8 @@
 require 'securerandom'
 require 'mini_magick'
 
+# MiniMagick.logger.level = Logger::DEBUG
+
 get '/' do
   local_name = nil
 
@@ -8,35 +10,38 @@ get '/' do
 end
 
 post '/upload' do
-  @filename = params[:file][:filename]
+  # @filename = params[:file][:filename]
   file = params[:file][:tempfile]
+  p file
   local_name = SecureRandom.uuid
+  initial_resize(file, local_name)
 
-  File.open("./public/uploads/#{local_name}", 'wb') do |f|
-    f.write(file.read)
-  end
-  
   erb :index, locals: { local_name: local_name }
 end
 
 get '/cropped/:image' do
   cache_control :no_store
-  p params
-  result = process(params[:image], params)
+  image_name = params[:image]
+  process(image_name, params)
   content_type :png
-  s = StringIO.new
-  result.write(s)
-  s.string
+  File.read("./public/uploads/#{image_name}.png")
+end
+
+def initial_resize(tmp_image, local_name)
+  image = MiniMagick::Tool::Convert.new do |img|
+    img << tmp_image.path
+    img.resize "600x600>"
+    img << "./public/uploads/#{local_name}"
+  end
 end
 
 def process(image_name, coords)
-  image = MiniMagick::Image.open("./public/uploads/#{image_name}")
-
-  image.crop "#{coords[:w]}x#{coords[:h]}+#{coords[:x]}+#{coords[:y]}"
-  image.resize "29x29"
-  image.dither "FloydSteinberg"
-  image.remap "./pyssla.gif"
-  image.format 'png'
-  # convert ~/Downloads/image.jpeg -scale 29x29 -dither FloydSteinberg -remap ~/Pictures/pyksla.gif ~/Downloads/output2.png
-  image
+  image = MiniMagick::Tool::Convert.new do |img|
+    img << "./public/uploads/#{image_name}"
+    img.crop "#{coords[:w]}x#{coords[:h]}+#{coords[:x]}+#{coords[:y]}"
+    img.resize "29x29"
+    img.dither "FloydSteinberg"
+    img.remap File.expand_path("./pyssla.gif")
+    img << "./public/uploads/#{image_name}.png"
+  end
 end

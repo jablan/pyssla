@@ -1,12 +1,19 @@
 <html>
-    <head>
-        <title>Image Upload</title>
-        <link rel="stylesheet" href="https://unpkg.com/jcrop/dist/jcrop.css">
-        <script src="https://unpkg.com/jcrop"></script>
-    </head>
-    <body>
-        <h1>Upload Image</h1>
-        
-        <%= yield %>
-    </body>
+  <head>
+    <title>Pyssla</title>
+    <link rel="stylesheet" href="https://unpkg.com/jcrop/dist/jcrop.css">
+    <script src="https://unpkg.com/jcrop"></script>
+    <style>
+#cropped {
+  width: 200px;
+  height: 200px;
+  image-rendering: crisp-edges;
+}
+    </style>
+  </head>
+  <body>
+    <h1>Bügelperle it!</h1>
+
+    <%= yield %>
+  </body>
 </html>
