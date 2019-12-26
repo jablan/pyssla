@@ -21,7 +21,7 @@ post '/upload' do
 end
 
 get %r{/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})} do |image_name|
-  cache_control :no_store
+  # cache_control :no_store
   return 404 unless File.exist?(File.join(UPLOAD_DIR, image_name))
 
   zoom = params[:zoom] == 'true'
@@ -59,7 +59,7 @@ def process(image_name, coords, dither:, zoom: false)
   image = MiniMagick::Tool::Convert.new do |img|
     img << File.join(UPLOAD_DIR, image_name)
     img.crop "#{coords[:w]}x#{coords[:h]}+#{coords[:x]}+#{coords[:y]}"
-    img.resize "29x29"
+    img.resize "#{coords[:resW]}x#{coords[:resH]}"
     dither ? img.dither(dither) : img.dither.+
     img.remap File.expand_path("./pyssla.gif")
     if zoom

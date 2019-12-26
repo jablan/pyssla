@@ -1,58 +1,99 @@
 <script>
-var w, h, x, y;
+var w, h, x, y, resW = 29, resH = 29, cropper;
 
 function updateCropped() {
-  var ditherSelect = document.getElementById("dither");
-  var dither = ditherSelect.value;
-  var imgSrc = "/<%= local_name %>?w=" + w + "&h=" + h + "&x=" + x + "&y=" + y + "&d=" + dither;
-  var imageCropped = document.getElementById("cropped");
+  const ditherSelect = document.getElementById("dither");
+  const dither = ditherSelect.value;
+  const imgSrc = "/<%= local_name %>?w="
+    + w + "&h=" + h + "&x="
+    + x + "&y=" + y + "&resW="
+    + resW + "&resH=" + resH
+    + "&d=" + dither;
+  const imageCropped = document.getElementById("cropped");
   imageCropped.src = imgSrc;
-  var linkZoomed = document.getElementById("btnZoomed");
+  const linkZoomed = document.getElementById("btnZoomed");
   linkZoomed.href = imgSrc + "&zoom=true&download=true";
-  var linkHTML = document.getElementById("btnHTML");
+  const linkHTML = document.getElementById("btnHTML");
   linkHTML.href = imgSrc + "&html=true";
 }
 
 function selectChange(coords, e) {
-  w = coords.pos.w;
-  h = coords.pos.h;
-  x = coords.pos.x;
-  y = coords.pos.y;
+  const pos = cropper.active.pos;
+  w = Math.round(pos.w);
+  h = Math.round(pos.h);
+  x = pos.x;
+  y = pos.y;
 
   updateCropped();
 }
 
-window.onload = function() {
-  const cropper = Jcrop.attach('image', {
-    aspectRatio: 1
-  });
+function updateRatio() {
+  const inputWidth = document.getElementById("width");
+  resW = inputWidth.value;
+  const inputHeight = document.getElementById("height");
+  resH = inputHeight.value;
+  const ratio = resW / resH;
 
+  cropper.setOptions({ aspectRatio: ratio });
+
+  selectChange();
+}
+
+window.onload = function() {
+  const inputWidth = document.getElementById("width");
+  inputWidth.value = resW;
+  const inputHeight = document.getElementById("height");
+  inputHeight.value = resH;
+
+  cropper = Jcrop.attach('image');
   cropper.listen('crop.change', selectChange);
+
+  updateRatio();
 };
 
 </script>
 <div class="container-fluid">
   <div class="row">
-    <form action="upload" class="form-control-file" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file" accept="image/*" onchange="this.form.submit();">
-    </form>
-    <select id="dither" class="form-control" onchange="updateCropped();">
-      <option value="FloydSteinberg">Floyd-Steinberg</option>
-      <option value="Riemersma">Riemersma</option>
-      <option value="None">None</option>
-    </select>
-  </div>
-
-  <div class="row">
+    <div class="col-sm">
+      <form action="upload" class="form-control-file" method="POST" enctype="multipart/form-data">
+        <div class="custom-file">
+          <input type="file" id="customFile" class="custom-file-input" name="file" accept="image/*" onchange="this.form.submit();">
+          <label class="custom-file-label" for="customFile">Choose picture</label>
+        </div>
+      </form>
+      <label for="dither">Dither algorithm</label>
+      <select id="dither" class="custom-select" onchange="updateCropped();">
+        <option value="FloydSteinberg">Floyd-Steinberg</option>
+        <option value="Riemersma">Riemersma</option>
+        <option value="None">None</option>
+      </select>
+      <label for="width">Pyssla dimensions</label>
+      <div class="form-row">
+        <div class="col-md-2 mb-2">
+          <input type="number" id="width" min="1" class="form-control" placeholder="w" value="29" onchange="updateRatio();">
+        </div>
+        <div class="col-md-2 mb-2">
+          <input type="number" id="height" min="1" class="form-control" placeholder="h" value="29" onchange="updateRatio();">
+        </div>
+      </div>
+    </div>
     <div class="col-sm">
       <% if local_name %>
-        <img id="image" class="img-fluid" src="uploads/<%= local_name %>" />
+        <img id="image" src="uploads/<%= local_name %>" />
       <% end %>
     </div>
     <div class="col-sm">
-      <img id="cropped" class="img-fluid" />
-      <a id="btnZoomed" class="btn btn-primary" href="#" role="button">Download zoomed</a>
-      <a id="btnHTML" class="btn btn-primary" href="#" role="button">Download HTML</a>
+      <div class="card text-center" style="width: 24rem;">
+        <div class="text-center">
+          <img id="cropped" class="card-img-top" alt="Preview" />
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">Preview</h5>
+          <p class="card-text">Use the buttons below and download your copy, so you can work in peace.</p>
+          <a id="btnZoomed" class="btn btn-primary" href="#" role="button">Download zoomed</a>
+          <a id="btnHTML" class="btn btn-primary" href="#" role="button">Download HTML</a>
+        </div>
+      </div>
     <div>
   </div>
 </div>
