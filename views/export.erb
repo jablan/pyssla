@@ -1,8 +1,16 @@
 <html>
 <head>
 <style>
+td {
+  width: 1em;
+  height: 1em;
+  text-align: center;
+}
 <% palette.each_with_index do |color, i| %>
-<%= ".color#{i} { background-color: rgb(#{color[0]}, #{color[1]}, #{color[2]}) }" %>
+.color<%= i %> {
+  background-color: rgb(<%= "#{color[0]}, #{color[1]}, #{color[2]}" %>);
+  color: <%= color[0] + color[1] + color[2] > 250 ? '#000' : '#fff' %>;
+}
 <% end %>
 </style>
 <body>
