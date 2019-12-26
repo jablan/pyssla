@@ -1,0 +1,20 @@
+<html>
+<head>
+<style>
+<% palette.each_with_index do |color, i| %>
+<%= ".color#{i} { background-color: rgb(#{color[0]}, #{color[1]}, #{color[2]}) }" %>
+<% end %>
+</style>
+<body>
+<table>
+<% pixels.each do |row| %>
+<tr>
+<% row.each do |cell| %>
+<% index = palette.index(cell) %>
+<td class="color<%= index %>"><%= index %></td>
+<% end %>
+</tr>
+<% end %>
+</table>
+</body>
+</html>

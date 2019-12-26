@@ -9,8 +9,8 @@ function updateCropped() {
   imageCropped.src = imgSrc;
   var linkZoomed = document.getElementById("btnZoomed");
   linkZoomed.href = imgSrc + "&zoom=true&download=true";
-  var linkCSV = document.getElementById("btnCSV");
-  linkCSV.href = imgSrc + "&csv=true";
+  var linkHTML = document.getElementById("btnHTML");
+  linkHTML.href = imgSrc + "&html=true";
 }
 
 function selectChange(coords, e) {
@@ -52,7 +52,7 @@ window.onload = function() {
     <div class="col-sm">
       <img id="cropped" class="img-fluid" />
       <a id="btnZoomed" class="btn btn-primary" href="#" role="button">Download zoomed</a>
-      <a id="btnCSV" class="btn btn-primary" href="#" role="button">Download CSV</a>
+      <a id="btnHTML" class="btn btn-primary" href="#" role="button">Download HTML</a>
     <div>
   </div>
 </div>

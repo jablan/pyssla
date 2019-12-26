@@ -13,9 +13,7 @@ get '/' do
 end
 
 post '/upload' do
-  # @filename = params[:file][:filename]
   file = params[:file][:tempfile]
-  p file
   local_name = SecureRandom.uuid
   initial_resize(file, local_name)
 
@@ -27,7 +25,7 @@ get %r{/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})} do |imag
   return 404 unless File.exist?(File.join(UPLOAD_DIR, image_name))
 
   zoom = params[:zoom] == 'true'
-  csv = params[:csv] == 'true'
+  html = params[:html] == 'true'
   dither = case params[:d]
   when 'None' then nil
   when 'Riemersma' then 'Riemersma'
@@ -36,11 +34,11 @@ get %r{/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})} do |imag
 
   png_path = process(image_name, params, zoom: zoom, dither: dither)
 
-  if csv
+  if html
     image = MiniMagick::Image.open(png_path)
     pixels = image.get_pixels
-    p pixels
-    'OK'
+    headers "Content-Disposition" => "attachment; filename=pyssla.html"
+    erb :export, layout: false, locals: { pixels: pixels, palette: palette }
   else
     content_type :png
     headers "Content-Disposition" => "attachment; filename=pyssla.png" if params[:download] == 'true'
@@ -71,4 +69,19 @@ def process(image_name, coords, dither:, zoom: false)
     img << png_path
   end
   png_path
+end
+
+def palette
+  @palette ||= [
+    [255, 121, 232],
+    [217, 204, 108],
+    [0, 137, 253],
+    [0, 126, 62],
+    [136, 139, 232],
+    [215, 108, 88],
+    [182, 50, 73],
+    [82, 31, 36],
+    [20, 29, 46],
+    [235, 254, 252],
+  ]
 end
