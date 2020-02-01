@@ -88,13 +88,13 @@ def process(image_name, coords, dither:, zoom: false)
   png_path = File.join(UPLOAD_DIR, "#{image_name}.png")
   image = MiniMagick::Tool::Convert.new do |img|
     img << File.join(UPLOAD_DIR, image_name)
+    img.limits(time: 10)
     img.crop "#{coords[:w]}x#{coords[:h]}+#{coords[:x]}+#{coords[:y]}"
     img.resize "#{coords[:resW]}x#{coords[:resH]}"
     dither ? img.dither(dither) : img.dither.+
     img.remap File.expand_path("./pyssla.gif")
     if zoom
-      img.filter 'Box'
-      img.resize '2000%'
+      img.scale '2000%'
     end
     img << png_path
   end
