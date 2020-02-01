@@ -5,6 +5,8 @@ MiniMagick.logger.level = Logger::DEBUG
 
 UPLOAD_DIR = './public/uploads'
 DEFAULT_DITHER = 'FloydSteinberg'
+MAX_TOTAL_SIZE = 100_000_000
+FILES_KEEP_FOR = 24*60*60
 
 get '/' do
   local_name = nil
@@ -13,6 +15,7 @@ get '/' do
 end
 
 post '/upload' do
+  dir_cleanup
   file = params[:file][:tempfile]
   local_name = SecureRandom.uuid
   initial_resize(file, local_name)
@@ -52,6 +55,33 @@ def initial_resize(tmp_image, local_name)
     img.resize '600x600>'
     img << File.join(UPLOAD_DIR, local_name)
   end
+end
+
+def dir_cleanup
+  delete_before = Time.now - FILES_KEEP_FOR
+  files = all_files
+  files_to_delete, files = files.partition{ |file| file[:time] < delete_before }
+  total_size = files.sum{ |f| f[:size] }
+  while total_size > MAX_TOTAL_SIZE do
+    file_to_delete, *files = files
+    total_size -= file_to_delete[:size]
+    files_to_delete << file_to_delete
+  end
+  filenames_to_delete = files_to_delete.map{ |f| f[:name] }
+  File.delete(*filenames_to_delete)
+end
+
+def all_files
+  filenames = Dir["#{UPLOAD_DIR}/*"]
+  files = filenames.map { |filename|
+    f = File.new(filename)
+    {
+      name: filename,
+      size: f.size,
+      time: f.ctime,
+    }
+  }
+  files.sort_by!{ |f| f[:time] }
 end
 
 def process(image_name, coords, dither:, zoom: false)
