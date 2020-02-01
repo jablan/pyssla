@@ -61,7 +61,7 @@ def dir_cleanup
   delete_before = Time.now - FILES_KEEP_FOR
   files = all_files
   files_to_delete, files = files.partition{ |file| file[:time] < delete_before }
-  total_size = files.sum{ |f| f[:size] }
+  total_size = files.inject(0){ |acc, f| acc + f[:size] }
   while total_size > MAX_TOTAL_SIZE do
     file_to_delete, *files = files
     total_size -= file_to_delete[:size]
