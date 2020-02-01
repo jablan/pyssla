@@ -51,8 +51,8 @@ get %r{/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})} do |imag
 end
 
 def validate_params(params)
-  return false unless params[:w].to_i.between?(1, 100)
-  return false unless params[:h].to_i.between?(1, 100)
+  return false unless params[:resH].to_i.between?(1, 100)
+  return false unless params[:resW].to_i.between?(1, 100)
   true
 end
 
