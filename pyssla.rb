@@ -26,6 +26,7 @@ end
 get %r{/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})} do |image_name|
   # cache_control :no_store
   return 404 unless File.exist?(File.join(UPLOAD_DIR, image_name))
+  return 400 unless validate_params(params)
 
   zoom = params[:zoom] == 'true'
   html = params[:html] == 'true'
@@ -47,6 +48,12 @@ get %r{/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})} do |imag
     headers "Content-Disposition" => "attachment; filename=pyssla.png" if params[:download] == 'true'
     File.read(png_path)
   end
+end
+
+def validate_params(params)
+  return false unless params[:w].to_i.between?(1, 100)
+  return false unless params[:h].to_i.between?(1, 100)
+  true
 end
 
 def initial_resize(tmp_image, local_name)
